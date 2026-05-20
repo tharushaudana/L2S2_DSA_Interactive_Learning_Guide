@@ -87,7 +87,7 @@ export default function App() {
               <BookOpen size={22} className="text-indigo-600 dark:text-indigo-400" />
               DSA Study Guide
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">IN 2111 · UoM · All 9 Lectures</p>
+
           </div>
           <div className="flex gap-2">
             {/* Dark mode toggle */}
