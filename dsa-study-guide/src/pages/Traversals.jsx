@@ -74,20 +74,34 @@ const TraversalAnimator = () => {
   const desc = DESCRIPTIONS[activeType];
 
   const allSteps = useMemo(() => {
-    const steps = sequence.map((nodeId, idx) => ({
-      highlightedNodes: sequence.slice(0, idx),
-      activeNode: nodeId,
-      description: `Visiting node ${nodeId}. Current path: [${sequence.slice(0, idx + 1).join(', ')}]`
-    }));
+    const steps = sequence.map((nodeId, idx) => {
+      let stepDesc = `Visiting node ${nodeId}.`;
+      
+      if (activeType === 'pre') {
+        stepDesc = `Pre-order: Visiting node ${nodeId} (Root) before its subtrees.`;
+      } else if (activeType === 'in') {
+        stepDesc = `In-order: Left subtree is done. Visiting node ${nodeId} now, then moving right.`;
+      } else if (activeType === 'post') {
+        stepDesc = `Post-order: Children of ${nodeId} are done. Finally visiting the node itself.`;
+      } else if (activeType === 'level') {
+        stepDesc = `Level-order (BFS): Visiting node ${nodeId} at the current level. Its children will be processed in the next level.`;
+      }
+
+      return {
+        highlightedNodes: sequence.slice(0, idx),
+        activeNode: nodeId,
+        description: `${stepDesc} Path so far: [${sequence.slice(0, idx + 1).join(', ')}]`
+      };
+    });
     
     // Add a final state where all are highlighted and active is null
     const finalStep = {
         highlightedNodes: [...sequence],
         activeNode: null,
-        description: `Traversal Complete! Final Path: [${sequence.join(', ')}]`
+        description: `Traversal Complete! Final Sequence: [${sequence.join(', ')}]`
     };
     return [...steps, finalStep];
-  }, [sequence]);
+  }, [sequence, activeType]);
 
   const { 
     currentStep, currentStepData, isPlaying, isComplete, speed, totalSteps, 

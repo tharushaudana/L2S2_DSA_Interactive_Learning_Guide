@@ -223,7 +223,7 @@ export function generateMergeSortSteps(inputArray) {
       steps.push({
         array: [...arr],
         highlights: { [offset]: 'sorted' },
-        description: `Base case: [${subArr}] at index ${offset} is sorted.`,
+        description: `Base Case: Sub-array [${subArr}] at index ${offset} has only 1 element. By definition, a single element is already sorted. Returning up the recursion tree.`,
         pointers: [],
         treeLevels: snapshot(),
       });
@@ -239,7 +239,7 @@ export function generateMergeSortSteps(inputArray) {
     steps.push({
       array: [...arr],
       highlights: Object.fromEntries(subArr.map((_, i) => [offset + i, 'comparing'])),
-      description: `Dividing [${subArr.join(', ')}] into two halves.`,
+      description: `Divide Phase: Splitting the current sub-array [${subArr.join(', ')}] into two halves: Left [${left.join(', ')}] and Right [${right.join(', ')}]. We will sort these independently.`,
       pointers: [],
       treeLevels: snapshot(),
     });
@@ -257,7 +257,7 @@ export function generateMergeSortSteps(inputArray) {
       steps.push({
         array: [...arr],
         highlights: { [offset + li]: 'min', [offset + mid + ri]: 'comparing' },
-        description: `Comparing ${sortedLeft[li]} and ${sortedRight[ri]}.`,
+        description: `Merge Phase: Comparing the smallest remaining elements from both halves: ${sortedLeft[li]} (Left) vs ${sortedRight[ri]} (Right). We pick the smaller one to place into the sorted result.`,
         pointers: [{ name: 'L', index: offset + li }, { name: 'R', index: offset + mid + ri }],
         treeLevels: snapshot(),
         activePointers: { depth: depth + 1, leftIdx: li, rightIdx: ri, leftStart: offset, rightStart: offset + mid }
@@ -290,7 +290,7 @@ export function generateMergeSortSteps(inputArray) {
     steps.push({
       array: [...arr],
       highlights: Object.fromEntries(merged.map((_, i) => [offset + i, 'sorted'])),
-      description: `Merged sorted sub-array: [${merged.join(', ')}].`,
+      description: `Sub-array Merged: Both halves are combined into a single sorted sub-array: [${merged.join(', ')}]. Moving back up the recursion tree.`,
       pointers: [],
       treeLevels: snapshot(),
     });
@@ -353,7 +353,7 @@ export function generateQuickSortSteps(inputArray, pivotStrategy = 'last') {
     steps.push({
       array: [...arr],
       highlights: { [high]: 'pivot' },
-      description: `Pivot selected: ${pivot}.`,
+      description: `Pivot Selection: We chose ${pivot} as the pivot for this range [${low}..${high}]. All elements will be compared against it to divide the array.`,
       pointers: [{ name: 'pivot', index: high }],
       range: { low, high },
       treeLevels: snapshot(),
@@ -364,7 +364,7 @@ export function generateQuickSortSteps(inputArray, pivotStrategy = 'last') {
       steps.push({
         array: [...arr],
         highlights: { [high]: 'pivot', [j]: 'comparing', ...(i >= low ? { [i]: 'min' } : {}) },
-        description: `Comparing ${arr[j]} with pivot ${pivot}.`,
+        description: `Partitioning: Comparing current element arr[${j}]=${arr[j]} with the pivot (${pivot}). ${arr[j] <= pivot ? `Since ${arr[j]} ≤ ${pivot}, it belongs in the LEFT partition.` : `Since ${arr[j]} > ${pivot}, it belongs in the RIGHT partition.`}`,
         pointers: [{ name: 'pivot', index: high }, { name: 'j', index: j }],
         range: { low, high },
         treeLevels: snapshot(),
@@ -383,7 +383,7 @@ export function generateQuickSortSteps(inputArray, pivotStrategy = 'last') {
     steps.push({
       array: [...arr],
       highlights: { [i + 1]: 'sorted' },
-      description: `Pivot placed at index ${i + 1}.`,
+      description: `Partition Complete: The pivot ${pivot} is now in its FINAL sorted position at index ${i + 1}. All elements to its left are ≤ ${pivot}, and all to its right are > ${pivot}.`,
       pointers: [{ name: 'pivot', index: i + 1 }],
       range: { low, high },
       treeLevels: snapshot(),
