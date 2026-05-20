@@ -133,9 +133,7 @@ export default function App() {
           ))}
         </div>
 
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800">
-          <p className="text-xs text-slate-400 dark:text-slate-500 text-center">Mr. Nadana Swasthi · Faculty of IT, UoM</p>
-        </div>
+
       </nav>
 
       {/* Mobile top bar */}
