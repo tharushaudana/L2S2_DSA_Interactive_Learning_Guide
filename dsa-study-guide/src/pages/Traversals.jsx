@@ -1,11 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
-import { Footprints, Play, RotateCcw, AlertTriangle } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Footprints, AlertTriangle } from 'lucide-react';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { Card } from '../components/ui/Card';
 import { TabBar } from '../components/ui/TabBar';
 import { InfoBox } from '../components/ui/InfoBox';
 import { CodeBlock } from '../components/ui/CodeBlock';
 import { TreeGraph } from '../components/visualizations/TreeGraph';
+import { VisualizerControls } from '../components/visualizations/VisualizerControls';
+import { useAnimationStepper } from '../hooks/useAnimationStepper';
 import { TRAVERSAL_TREE } from '../data/treeData';
 import { CODE } from '../data/codeSnippets';
 
@@ -67,39 +69,42 @@ const DESCRIPTIONS = {
 
 const TraversalAnimator = () => {
   const [activeType, setActiveType] = useState('pre');
-  const [playing, setPlaying] = useState(false);
-  const [step, setStep] = useState(-1);
-  const timerRef = useRef(null);
 
   const sequence = TRAVERSAL_TREE.sequences[activeType];
   const desc = DESCRIPTIONS[activeType];
 
-  const play = () => {
-    if (playing) return;
-    setPlaying(true);
-    setStep(-1);
-    let cur = 0;
-    timerRef.current = setInterval(() => {
-      setStep(cur);
-      cur++;
-      if (cur >= sequence.length) {
-        clearInterval(timerRef.current);
-        setPlaying(false);
-      }
-    }, 800);
-  };
+  const allSteps = useMemo(() => {
+    const steps = sequence.map((nodeId, idx) => ({
+      highlightedNodes: sequence.slice(0, idx),
+      activeNode: nodeId,
+      description: `Visiting node ${nodeId}. Current path: [${sequence.slice(0, idx + 1).join(', ')}]`
+    }));
+    
+    // Add a final state where all are highlighted and active is null
+    const finalStep = {
+        highlightedNodes: [...sequence],
+        activeNode: null,
+        description: `Traversal Complete! Final Path: [${sequence.join(', ')}]`
+    };
+    return [...steps, finalStep];
+  }, [sequence]);
 
-  const reset = () => {
-    clearInterval(timerRef.current);
-    setPlaying(false);
-    setStep(-1);
-  };
+  const { 
+    currentStep, currentStepData, isPlaying, isComplete, speed, totalSteps, 
+    play, pause, reset, stepForward, stepBack, setSpeed 
+  } = useAnimationStepper(allSteps);
 
-  useEffect(() => () => clearInterval(timerRef.current), []);
+  useEffect(() => { reset(); }, [activeType]);
+
+  const displayData = currentStepData || {
+      highlightedNodes: [],
+      activeNode: null,
+      description: 'Press Play to start the traversal visualization.'
+  };
 
   const handleTypeChange = (type) => {
-    reset();
     setActiveType(type);
+    reset();
   };
 
   return (
@@ -124,36 +129,51 @@ const TraversalAnimator = () => {
             <TreeGraph
               nodes={TRAVERSAL_TREE.nodes}
               edges={TRAVERSAL_TREE.edges}
-              highlightedNodes={step >= 0 ? sequence.slice(0, step) : []}
-              activeNode={step >= 0 ? sequence[step] : null}
+              highlightedNodes={displayData.highlightedNodes}
+              activeNode={displayData.activeNode}
               className="h-60"
             />
           </div>
 
           {/* Step badges */}
-          <div className="w-full mt-4 flex flex-wrap gap-2 justify-center font-mono text-sm">
-            {sequence.map((nodeId, idx) => (
-              <div
-                key={idx}
-                className={`w-9 h-9 rounded-full flex items-center justify-center font-bold transition-all duration-300
-                  ${step === idx ? 'bg-indigo-600 text-white scale-110 shadow-lg'
-                    : step > idx ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500'}`}
-              >
-                {nodeId}
-              </div>
-            ))}
+          <div className="w-full mt-4 flex flex-wrap gap-2 justify-center font-mono text-sm mb-4">
+            {sequence.map((nodeId, idx) => {
+              const isActive = currentStep === idx;
+              const isVisited = currentStep > idx || (currentStep === sequence.length && idx < sequence.length);
+
+              return (
+                <div
+                  key={idx}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center font-bold transition-all duration-300
+                    ${isActive ? 'bg-indigo-600 text-white scale-110 shadow-lg'
+                      : isVisited ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300'
+                      : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500'}`}
+                >
+                  {nodeId}
+                </div>
+              );
+            })}
           </div>
 
-          <div className="w-full mt-4 flex gap-3 justify-center">
-            <button onClick={play} disabled={playing}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-medium text-sm transition-colors disabled:opacity-50">
-              <Play size={16} /> {playing ? 'Playing...' : 'Play'}
-            </button>
-            <button onClick={reset}
-              className="flex items-center gap-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-lg font-medium text-sm transition-colors">
-              <RotateCcw size={16} /> Reset
-            </button>
+          {/* Description */}
+          <div className="w-full mb-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3 min-h-[52px] text-sm text-slate-700 dark:text-slate-300 font-mono">
+            {displayData.description}
+          </div>
+
+          <div className="w-full">
+              <VisualizerControls 
+                  isPlaying={isPlaying}
+                  isComplete={isComplete}
+                  currentStep={currentStep}
+                  totalSteps={totalSteps}
+                  speed={speed}
+                  play={play}
+                  pause={pause}
+                  reset={reset}
+                  stepForward={stepForward}
+                  stepBack={stepBack}
+                  setSpeed={setSpeed}
+              />
           </div>
         </Card>
 
