@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import {
   BarChart2, GitMerge, Zap, Network, Search, Footprints,
-  Trash2, Scale, RefreshCw, GraduationCap, BookOpen, Menu, X
+  Trash2, Scale, RefreshCw, GraduationCap, BookOpen, Menu, X, Moon, Sun
 } from 'lucide-react';
+import { useTheme } from './hooks/useTheme';
 
 import SortingBasics from './pages/SortingBasics';
 import MergeSort from './pages/MergeSort';
@@ -49,78 +50,80 @@ const LECTURES = [
 ];
 
 const PAGE_MAP = {
-  L1: SortingBasics,
-  L2: MergeSort,
-  L3: QuickSort,
-  L4: TreesIntro,
-  L5: BSTOperations,
-  L6: Traversals,
-  L7: BSTDeletion,
-  L8: AVLIntro,
-  L9: AVLImplementation,
-  exam: ExamPrep,
+  L1: SortingBasics, L2: MergeSort, L3: QuickSort,
+  L4: TreesIntro, L5: BSTOperations, L6: Traversals, L7: BSTDeletion,
+  L8: AVLIntro, L9: AVLImplementation, exam: ExamPrep,
 };
 
 export default function App() {
   const [activePage, setActivePage] = useState('L1');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { dark, toggle } = useTheme();
 
   const PageComponent = PAGE_MAP[activePage] || SortingBasics;
 
-  const handleNav = (id) => {
-    setActivePage(id);
-    setSidebarOpen(false);
-  };
+  const handleNav = (id) => { setActivePage(id); setSidebarOpen(false); };
+
+  const allItems = LECTURES.flatMap(g => g.items);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans text-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col md:flex-row font-sans text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/30 z-20 md:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 bg-black/40 z-20 md:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
       <nav className={`
-        fixed md:sticky top-0 left-0 h-screen w-72 bg-white border-r border-slate-200 shadow-lg z-30 flex flex-col
-        transition-transform duration-300 ease-in-out
+        fixed md:sticky top-0 left-0 h-screen w-72
+        bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
+        shadow-lg z-30 flex flex-col transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        {/* Logo */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+        {/* Logo + dark toggle */}
+        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent flex items-center gap-2">
-              <BookOpen size={22} className="text-indigo-600" />
+              <BookOpen size={22} className="text-indigo-600 dark:text-indigo-400" />
               DSA Study Guide
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5">IN 2111 · UoM · All 9 Lectures</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">IN 2111 · UoM · All 9 Lectures</p>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="md:hidden text-slate-400 hover:text-slate-600">
-            <X size={20} />
-          </button>
+          <div className="flex gap-2">
+            {/* Dark mode toggle */}
+            <button
+              onClick={toggle}
+              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+              title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+            <button onClick={() => setSidebarOpen(false)} className="md:hidden p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
-        {/* Nav groups */}
+        {/* Nav */}
         <div className="flex-grow overflow-y-auto p-3 space-y-5">
           {LECTURES.map(group => (
             <div key={group.group}>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider px-2 mb-2">{group.group}</p>
+              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-2 mb-2">{group.group}</p>
               <div className="space-y-1">
                 {group.items.map(item => {
                   const Icon = item.icon;
                   const isActive = activePage === item.id;
                   return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleNav(item.id)}
+                    <button key={item.id} onClick={() => handleNav(item.id)}
                       className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-xl transition-all text-left group
                         ${isActive
-                          ? 'bg-indigo-50 text-indigo-700 shadow-sm border border-indigo-100'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
+                          ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 shadow-sm border border-indigo-100 dark:border-indigo-800'
+                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'}`}
                     >
-                      <Icon size={18} className={`mt-0.5 shrink-0 ${isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                      <Icon size={18} className={`mt-0.5 shrink-0 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
                       <div className="min-w-0">
-                        <p className={`font-medium text-sm leading-tight ${isActive ? 'text-indigo-700' : ''}`}>{item.label}</p>
-                        <p className={`text-xs truncate mt-0.5 ${isActive ? 'text-indigo-500' : 'text-slate-400'}`}>{item.sub}</p>
+                        <p className={`font-medium text-sm leading-tight`}>{item.label}</p>
+                        <p className={`text-xs truncate mt-0.5 ${isActive ? 'text-indigo-500 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'}`}>{item.sub}</p>
                       </div>
                     </button>
                   );
@@ -130,22 +133,25 @@ export default function App() {
           ))}
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-slate-100">
-          <p className="text-xs text-slate-400 text-center">Mr. Nadana Swasthi · Faculty of IT, UoM</p>
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+          <p className="text-xs text-slate-400 dark:text-slate-500 text-center">Mr. Nadana Swasthi · Faculty of IT, UoM</p>
         </div>
       </nav>
 
       {/* Mobile top bar */}
-      <div className="md:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-3 sticky top-0 z-10 shadow-sm">
-        <button onClick={() => setSidebarOpen(true)} className="text-slate-600 hover:text-slate-900">
+      <div className="md:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center gap-3 sticky top-0 z-10 shadow-sm">
+        <button onClick={() => setSidebarOpen(true)} className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">
           <Menu size={22} />
         </button>
         <h1 className="text-base font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
           DSA Study Guide
         </h1>
-        <span className="ml-auto text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
-          {LECTURES.flatMap(g => g.items).find(i => i.id === activePage)?.shortLabel}
+        <button onClick={toggle}
+          className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
+          {dark ? <Sun size={15} /> : <Moon size={15} />}
+        </button>
+        <span className="ml-auto text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-2 py-1 rounded">
+          {allItems.find(i => i.id === activePage)?.shortLabel}
         </span>
       </div>
 

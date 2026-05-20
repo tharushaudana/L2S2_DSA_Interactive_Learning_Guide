@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Network, Zap, BookOpen } from 'lucide-react';
+import { Network, Zap } from 'lucide-react';
 import { SectionHeader } from '../components/ui/SectionHeader';
 import { Card } from '../components/ui/Card';
 import { TabBar } from '../components/ui/TabBar';
@@ -36,18 +36,18 @@ const Terminology = () => {
           {TERMS.map((item) => (
             <Card
               key={item.title}
-              className={`transition-all duration-200 cursor-pointer p-4 ${activeTerm === item.title ? 'border-indigo-500 bg-indigo-50 shadow-md scale-[1.01]' : 'hover:border-indigo-300 hover:bg-slate-50'}`}
+              className={`transition-all duration-200 cursor-pointer p-4 ${activeTerm === item.title ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-md scale-[1.01]' : 'hover:border-indigo-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
               onMouseEnter={() => setActiveTerm(item.title)}
               onMouseLeave={() => setActiveTerm(null)}
             >
-              <h3 className={`font-semibold mb-1 ${activeTerm === item.title ? 'text-indigo-700' : 'text-slate-800'}`}>{item.title}</h3>
-              <p className="text-slate-600 text-sm">{item.desc}</p>
+              <h3 className={`font-semibold mb-1 ${activeTerm === item.title ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-800 dark:text-slate-100'}`}>{item.title}</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">{item.desc}</p>
             </Card>
           ))}
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col items-center justify-center lg:sticky lg:top-6 min-h-[400px]">
-          <div className="bg-slate-50 w-full rounded-lg border border-slate-100 flex items-center justify-center p-4 flex-grow">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 flex flex-col items-center justify-center lg:sticky lg:top-6 min-h-[400px]">
+          <div className="bg-slate-50 dark:bg-slate-900/50 w-full rounded-lg border border-slate-100 dark:border-slate-700 flex items-center justify-center p-4 flex-grow">
             <TreeGraph
               nodes={TERM_TREE.nodes}
               edges={TERM_TREE.edges}
@@ -57,7 +57,7 @@ const Terminology = () => {
               className="h-72"
             />
           </div>
-          <p className="text-sm font-medium text-slate-400 mt-4 uppercase tracking-wider">
+          <p className="text-sm font-medium text-slate-400 dark:text-slate-500 mt-4 uppercase tracking-wider">
             {activeTerm ? `Highlighting: ${activeTerm}` : 'Hover a term to highlight'}
           </p>
         </div>
@@ -68,9 +68,9 @@ const Terminology = () => {
 
 const Properties = () => (
   <div className="space-y-6">
-    <Card className="bg-indigo-50 border-indigo-100">
-      <h3 className="text-xl font-bold text-indigo-900 mb-4 flex items-center gap-2">
-        <Zap size={20} className="text-indigo-600" /> Key Formulas to Memorize
+    <Card className="bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800">
+      <h3 className="text-xl font-bold text-indigo-900 dark:text-indigo-100 mb-4 flex items-center gap-2">
+        <Zap size={20} className="text-indigo-600 dark:text-indigo-400" /> Key Formulas to Memorize
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[
@@ -79,17 +79,17 @@ const Properties = () => (
           { label: 'Min Height for N Nodes', formula: '⌊log₂N⌋', note: 'e.g. 15 nodes → min height 3' },
           { label: 'Total Edges (N nodes)', formula: 'N - 1', note: 'Always. Every node except root has 1 incoming edge.' },
         ].map(p => (
-          <div key={p.label} className="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-            <span className="block text-xs text-slate-500 font-medium mb-1">{p.label}</span>
-            <span className="block text-3xl font-mono text-indigo-700 mb-1">{p.formula}</span>
-            <span className="block text-xs text-slate-500 italic">{p.note}</span>
+          <div key={p.label} className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <span className="block text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">{p.label}</span>
+            <span className="block text-3xl font-mono text-indigo-700 dark:text-indigo-300 mb-1">{p.formula}</span>
+            <span className="block text-xs text-slate-500 dark:text-slate-400 italic">{p.note}</span>
           </div>
         ))}
       </div>
     </Card>
 
     <Card>
-      <h3 className="text-xl font-bold text-slate-800 mb-4">Tree Terminology Clarification</h3>
+      <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">Tree Terminology Clarification</h3>
       <div className="space-y-3">
         {[
           { term: 'Height vs Depth', desc: 'Height is measured from a node DOWN to the furthest leaf. Depth is measured from the root DOWN to the node. Both of root: height = tree height, depth = 0.' },
@@ -97,9 +97,9 @@ const Properties = () => (
           { term: 'Degree', desc: 'Number of children a node has. Leaf nodes have degree 0. In a binary tree, max degree = 2.' },
           { term: 'Ancestor / Descendant', desc: 'Ancestors of node X: X itself plus all nodes from X to the root. Descendants: X itself plus all nodes reachable from X going downward.' },
         ].map(item => (
-          <div key={item.term} className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-            <h4 className="font-semibold text-slate-800 mb-1">{item.term}</h4>
-            <p className="text-sm text-slate-600">{item.desc}</p>
+          <div key={item.term} className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-100 dark:border-slate-700">
+            <h4 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{item.term}</h4>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{item.desc}</p>
           </div>
         ))}
       </div>
@@ -115,10 +115,10 @@ const TreeTypes = () => (
   <div className="space-y-4">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {TREE_TYPES.map((tree, idx) => (
-        <Card key={idx} className="flex flex-col hover:shadow-md transition-shadow hover:border-indigo-200">
-          <h3 className="text-xl font-bold text-slate-800 mb-2">{tree.name}</h3>
-          <p className="text-slate-600 mb-4 flex-grow text-sm">{tree.desc}</p>
-          <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex items-center justify-center">
+        <Card key={idx} className="flex flex-col hover:shadow-md transition-shadow hover:border-indigo-200 dark:hover:border-indigo-700">
+          <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">{tree.name}</h3>
+          <p className="text-slate-600 dark:text-slate-400 mb-4 flex-grow text-sm">{tree.desc}</p>
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700 flex items-center justify-center">
             <TreeGraph nodes={tree.nodes} edges={tree.edges} className="h-40" />
           </div>
         </Card>

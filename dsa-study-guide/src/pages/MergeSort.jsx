@@ -20,35 +20,35 @@ const TABS = [
 const Theory = () => (
   <div className="space-y-6">
     <Card>
-      <h3 className="text-xl font-bold text-slate-800 mb-4">Divide and Conquer</h3>
-      <p className="text-slate-600 mb-4">Merge Sort recursively splits the array into halves until trivially sorted (single elements), then merges sorted halves.</p>
+      <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">Divide and Conquer</h3>
+      <p className="text-slate-600 dark:text-slate-400 mb-4">Merge Sort recursively splits the array into halves until trivially sorted (single elements), then merges sorted halves.</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-center">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl p-4 text-center">
           <div className="text-2xl mb-2">✂️</div>
-          <h4 className="font-bold text-red-800 mb-1">1. Divide</h4>
-          <p className="text-sm text-red-700">Split array in half repeatedly until subarrays have 1 element.</p>
+          <h4 className="font-bold text-red-800 dark:text-red-200 mb-1">1. Divide</h4>
+          <p className="text-sm text-red-700 dark:text-red-300">Split array in half repeatedly until subarrays have 1 element.</p>
         </div>
-        <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-center">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-xl p-4 text-center">
           <div className="text-2xl mb-2">🔒</div>
-          <h4 className="font-bold text-amber-800 mb-1">2. Conquer</h4>
-          <p className="text-sm text-amber-700">Single-element subarrays are trivially sorted (base case).</p>
+          <h4 className="font-bold text-amber-800 dark:text-amber-200 mb-1">2. Conquer</h4>
+          <p className="text-sm text-amber-700 dark:text-amber-300">Single-element subarrays are trivially sorted (base case).</p>
         </div>
-        <div className="bg-green-50 border border-green-100 rounded-xl p-4 text-center">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-xl p-4 text-center">
           <div className="text-2xl mb-2">🔗</div>
-          <h4 className="font-bold text-green-800 mb-1">3. Combine</h4>
-          <p className="text-sm text-green-700">Merge sorted pairs into larger sorted arrays until one sorted array remains.</p>
+          <h4 className="font-bold text-green-800 dark:text-green-200 mb-1">3. Combine</h4>
+          <p className="text-sm text-green-700 dark:text-green-300">Merge sorted pairs into larger sorted arrays until one sorted array remains.</p>
         </div>
       </div>
     </Card>
 
     <Card>
-      <h3 className="text-xl font-bold text-slate-800 mb-4">The Merge Operation</h3>
-      <p className="text-slate-600 mb-3">The key step: merging two sorted arrays into one sorted array.</p>
-      <ol className="space-y-2 text-sm text-slate-700">
-        <li className="flex gap-3 items-start"><span className="bg-indigo-100 text-indigo-700 font-bold rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0">1</span>Use two pointers, one for each sorted half.</li>
-        <li className="flex gap-3 items-start"><span className="bg-indigo-100 text-indigo-700 font-bold rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0">2</span>Compare elements at both pointers; place the smaller into result.</li>
-        <li className="flex gap-3 items-start"><span className="bg-indigo-100 text-indigo-700 font-bold rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0">3</span>Advance the pointer of the half that contributed the element.</li>
-        <li className="flex gap-3 items-start"><span className="bg-indigo-100 text-indigo-700 font-bold rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0">4</span>Append remaining elements from whichever half has leftovers.</li>
+      <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">The Merge Operation</h3>
+      <p className="text-slate-600 dark:text-slate-400 mb-3">The key step: merging two sorted arrays into one sorted array.</p>
+      <ol className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+        <li className="flex gap-3 items-start"><span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0">1</span>Use two pointers, one for each sorted half.</li>
+        <li className="flex gap-3 items-start"><span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0">2</span>Compare elements at both pointers; place the smaller into result.</li>
+        <li className="flex gap-3 items-start"><span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0">3</span>Advance the pointer of the half that contributed the element.</li>
+        <li className="flex gap-3 items-start"><span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0">4</span>Append remaining elements from whichever half has leftovers.</li>
       </ol>
       <div className="mt-4 bg-slate-900 rounded-xl p-4">
         <p className="text-indigo-300 font-mono text-sm">Left:  [1, 4, 7]</p>
@@ -66,7 +66,7 @@ const Theory = () => (
 const Analysis = () => (
   <div className="space-y-6">
     <Card>
-      <h3 className="text-xl font-bold text-slate-800 mb-4">Complexity Analysis</h3>
+      <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">Complexity Analysis</h3>
       <ComplexityTable
         columns={['Case', 'Time Complexity', 'Reason']}
         rows={[
@@ -80,8 +80,8 @@ const Analysis = () => (
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Card>
-        <h4 className="font-bold text-green-700 mb-3 flex items-center gap-2">✓ Advantages</h4>
-        <ul className="space-y-2 text-sm text-slate-700">
+        <h4 className="font-bold text-green-700 dark:text-green-400 mb-3 flex items-center gap-2">✓ Advantages</h4>
+        <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
           <li>• <strong>Stable:</strong> Preserves relative order of equal elements</li>
           <li>• <strong>Guaranteed O(n log n):</strong> No worst-case degradation</li>
           <li>• <strong>Parallelizable:</strong> Each half can be sorted independently</li>
@@ -89,8 +89,8 @@ const Analysis = () => (
         </ul>
       </Card>
       <Card>
-        <h4 className="font-bold text-red-700 mb-3 flex items-center gap-2">✗ Disadvantages</h4>
-        <ul className="space-y-2 text-sm text-slate-700">
+        <h4 className="font-bold text-red-700 dark:text-red-400 mb-3 flex items-center gap-2">✗ Disadvantages</h4>
+        <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
           <li>• <strong>O(n) space:</strong> Not in-place — requires extra arrays</li>
           <li>• <strong>Overhead:</strong> Slower than Insertion Sort for small arrays</li>
           <li>• <strong>Same cost always:</strong> Can't skip work if input is nearly sorted</li>
@@ -108,7 +108,7 @@ export default function MergeSort() {
     theory: <Theory />,
     visualizer: (
       <Card>
-        <h3 className="text-xl font-bold text-slate-800 mb-4">Merge Sort Visualizer</h3>
+        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">Merge Sort Visualizer</h3>
         <InfoBox variant="info" className="mb-4">
           Watch as the array splits (yellow) and merges (green). The description shows each comparison and placement step.
         </InfoBox>
