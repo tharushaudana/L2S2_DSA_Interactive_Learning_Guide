@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react';
 import { ArrayVisualizer } from './ArrayVisualizer';
 import { useAnimationStepper } from '../../hooks/useAnimationStepper';
@@ -16,9 +16,11 @@ export const SortingVisualizer = ({ generateSteps, title, algorithmId }) => {
   const steps = useMemo(() => {
     try { return generateSteps(parsedArray, pivotStrategy); }
     catch { return []; }
-  }, [parsedArray, pivotStrategy]);
+  }, [generateSteps, parsedArray, pivotStrategy]);
 
   const { currentStep, currentStepData, isPlaying, isComplete, speed, totalSteps, play, pause, reset, stepForward, stepBack, setSpeed } = useAnimationStepper(steps);
+
+  useEffect(() => { reset(); }, [generateSteps]);
 
   const displayData = currentStepData || {
     array: parsedArray, highlights: {}, pointers: [],
