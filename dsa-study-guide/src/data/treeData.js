@@ -49,6 +49,27 @@ export const TRAVERSAL_TREE = {
     ['3', '1'], ['3', '6'], ['10', '14'],
     ['6', '4'], ['6', '7'], ['14', '13']
   ],
+  structure: {
+    id: '8',
+    left: {
+      id: '3',
+      left: { id: '1', left: null, right: null },
+      right: {
+        id: '6',
+        left: { id: '4', left: null, right: null },
+        right: { id: '7', left: null, right: null }
+      }
+    },
+    right: {
+      id: '10',
+      left: null,
+      right: {
+        id: '14',
+        left: { id: '13', left: null, right: null },
+        right: null
+      }
+    }
+  },
   sequences: {
     pre: ['8', '3', '1', '6', '4', '7', '10', '14', '13'],
     in: ['1', '3', '4', '6', '7', '8', '10', '13', '14'],

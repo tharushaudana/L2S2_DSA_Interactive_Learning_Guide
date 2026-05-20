@@ -7,6 +7,7 @@ import { InfoBox } from '../components/ui/InfoBox';
 import { CodeBlock } from '../components/ui/CodeBlock';
 import { TreeGraph } from '../components/visualizations/TreeGraph';
 import { VisualizerControls } from '../components/visualizations/VisualizerControls';
+import { TraversalMechanism } from '../components/visualizations/TraversalMechanism';
 import { useAnimationStepper } from '../hooks/useAnimationStepper';
 import { TRAVERSAL_TREE } from '../data/treeData';
 import { CODE } from '../data/codeSnippets';
@@ -67,53 +68,166 @@ const DESCRIPTIONS = {
   },
 };
 
+function generateTraversalSteps(type, root) {
+  const steps = [];
+  const sequence = [];
+  
+  if (type === 'level') {
+    const queue = [root];
+    steps.push({
+      queue: [root.id],
+      activeNode: null,
+      visitedNodes: [],
+      description: "Starting Level-order traversal. Enqueuing the Root node to begin."
+    });
+
+    while (queue.length > 0) {
+      const node = queue.shift();
+      sequence.push(node.id);
+      
+      steps.push({
+        queue: queue.map(n => n.id),
+        activeNode: node.id,
+        visitedNodes: [...sequence],
+        description: `Dequeueing node ${node.id} and visiting it.`
+      });
+
+      if (node.left || node.right) {
+        let desc = `Checking children of ${node.id}. `;
+        if (node.left) {
+          queue.push(node.left);
+          desc += `Enqueuing Left child ${node.left.id}. `;
+        }
+        if (node.right) {
+          queue.push(node.right);
+          desc += `Enqueuing Right child ${node.right.id}. `;
+        }
+        steps.push({
+          queue: queue.map(n => n.id),
+          activeNode: node.id,
+          visitedNodes: [...sequence],
+          description: desc
+        });
+      }
+    }
+  } else {
+    // DFS Simulation
+    const stack = [];
+    
+    function dfs(node) {
+      if (!node) return;
+
+      // 1. Enter Node
+      stack.push({ id: node.id, status: 'Visiting' });
+      steps.push({
+        stack: [...stack],
+        activeNode: node.id,
+        visitedNodes: [...sequence],
+        description: `Calling DFS(${node.id}). Pushing frame to stack.`
+      });
+
+      // Pre-order Visit
+      if (type === 'pre') {
+        sequence.push(node.id);
+        stack[stack.length - 1].status = 'Printing Root';
+        steps.push({
+          stack: [...stack],
+          activeNode: node.id,
+          visitedNodes: [...sequence],
+          description: `Pre-order: Printing node ${node.id} BEFORE visiting children.`
+        });
+      }
+
+      // 2. Go Left
+      stack[stack.length - 1].status = 'Moving Left';
+      steps.push({
+        stack: [...stack],
+        activeNode: node.id,
+        visitedNodes: [...sequence],
+        description: `Recursively calling DFS for the Left child of ${node.id}.`
+      });
+      dfs(node.left);
+
+      // In-order Visit
+      if (type === 'in') {
+        sequence.push(node.id);
+        stack[stack.length - 1].status = 'Printing Root';
+        steps.push({
+          stack: [...stack],
+          activeNode: node.id,
+          visitedNodes: [...sequence],
+          description: `In-order: Left subtree finished. Printing node ${node.id} now.`
+        });
+      }
+
+      // 3. Go Right
+      stack[stack.length - 1].status = 'Moving Right';
+      steps.push({
+        stack: [...stack],
+        activeNode: node.id,
+        visitedNodes: [...sequence],
+        description: `Recursively calling DFS for the Right child of ${node.id}.`
+      });
+      dfs(node.right);
+
+      // Post-order Visit
+      if (type === 'post') {
+        sequence.push(node.id);
+        stack[stack.length - 1].status = 'Printing Root';
+        steps.push({
+          stack: [...stack],
+          activeNode: node.id,
+          visitedNodes: [...sequence],
+          description: `Post-order: Both subtrees finished. Finally printing node ${node.id}.`
+        });
+      }
+
+      // 4. Leave Node
+      stack.pop();
+      steps.push({
+        stack: [...stack],
+        activeNode: stack.length > 0 ? stack[stack.length - 1].id : null,
+        visitedNodes: [...sequence],
+        description: `DFS(${node.id}) finished. Popping frame and returning to parent.`
+      });
+    }
+
+    dfs(root);
+  }
+
+  // Final step
+  steps.push({
+    stack: [],
+    queue: [],
+    activeNode: null,
+    visitedNodes: [...sequence],
+    description: `Traversal Complete! Final Sequence: [${sequence.join(', ')}]`
+  });
+
+  return steps;
+}
+
 const TraversalAnimator = () => {
   const [activeType, setActiveType] = useState('pre');
 
-  const sequence = TRAVERSAL_TREE.sequences[activeType];
-  const desc = DESCRIPTIONS[activeType];
-
-  const allSteps = useMemo(() => {
-    const steps = sequence.map((nodeId, idx) => {
-      let stepDesc = `Visiting node ${nodeId}.`;
-      
-      if (activeType === 'pre') {
-        stepDesc = `Pre-order: Visiting node ${nodeId} (Root) before its subtrees.`;
-      } else if (activeType === 'in') {
-        stepDesc = `In-order: Left subtree is done. Visiting node ${nodeId} now, then moving right.`;
-      } else if (activeType === 'post') {
-        stepDesc = `Post-order: Children of ${nodeId} are done. Finally visiting the node itself.`;
-      } else if (activeType === 'level') {
-        stepDesc = `Level-order (BFS): Visiting node ${nodeId} at the current level. Its children will be processed in the next level.`;
-      }
-
-      return {
-        highlightedNodes: sequence.slice(0, idx),
-        activeNode: nodeId,
-        description: `${stepDesc} Path so far: [${sequence.slice(0, idx + 1).join(', ')}]`
-      };
-    });
-    
-    // Add a final state where all are highlighted and active is null
-    const finalStep = {
-        highlightedNodes: [...sequence],
-        activeNode: null,
-        description: `Traversal Complete! Final Sequence: [${sequence.join(', ')}]`
-    };
-    return [...steps, finalStep];
-  }, [sequence, activeType]);
+  const steps = useMemo(() => {
+    return generateTraversalSteps(activeType, TRAVERSAL_TREE.structure);
+  }, [activeType]);
 
   const { 
     currentStep, currentStepData, isPlaying, isComplete, speed, totalSteps, 
     play, pause, reset, stepForward, stepBack, setSpeed 
-  } = useAnimationStepper(allSteps);
+  } = useAnimationStepper(steps);
 
   useEffect(() => { reset(); }, [activeType]);
 
   const displayData = currentStepData || {
       highlightedNodes: [],
       activeNode: null,
-      description: 'Press Play to start the traversal visualization.'
+      description: 'Press Play to start the traversal visualization.',
+      stack: [],
+      queue: [],
+      visitedNodes: []
   };
 
   const handleTypeChange = (type) => {
@@ -121,17 +235,19 @@ const TraversalAnimator = () => {
     reset();
   };
 
+  const desc = DESCRIPTIONS[activeType];
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Tree + Controls */}
-        <Card className="flex flex-col items-center">
-          <div className="flex w-full border-b border-slate-200 dark:border-slate-700 pb-2 mb-4 gap-1">
+        {/* Tree + Mechanism */}
+        <Card className="flex flex-col">
+          <div className="flex w-full border-b border-slate-200 dark:border-slate-700 pb-2 mb-4 gap-1 overflow-x-auto">
             {Object.keys(DESCRIPTIONS).map(key => (
               <button
                 key={key}
                 onClick={() => handleTypeChange(key)}
-                className={`flex-1 px-2 py-1.5 rounded-t font-semibold text-xs transition-colors relative ${activeType === key ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                className={`px-3 py-1.5 rounded-t font-semibold text-xs transition-colors relative whitespace-nowrap ${activeType === key ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
               >
                 {DESCRIPTIONS[key].name}
                 {activeType === key && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-t" />}
@@ -139,42 +255,58 @@ const TraversalAnimator = () => {
             ))}
           </div>
 
-          <div className="w-full bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700 flex-grow flex items-center justify-center min-h-[260px]">
-            <TreeGraph
-              nodes={TRAVERSAL_TREE.nodes}
-              edges={TRAVERSAL_TREE.edges}
-              highlightedNodes={displayData.highlightedNodes}
-              activeNode={displayData.activeNode}
-              className="h-60"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 flex-grow">
+            {/* Tree Graph */}
+            <div className="md:col-span-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center min-h-[300px]">
+              <TreeGraph
+                nodes={TRAVERSAL_TREE.nodes}
+                edges={TRAVERSAL_TREE.edges}
+                highlightedNodes={displayData.visitedNodes}
+                activeNode={displayData.activeNode}
+                highlightedEdges={
+                    activeType !== 'level' && displayData.stack ? 
+                    displayData.stack.slice(0, -1).map((frame, i) => [frame.id, displayData.stack[i+1].id]) : 
+                    []
+                }
+                className="h-64"
+              />
+            </div>
+
+            {/* Stack/Queue Mechanism */}
+            <div className="md:col-span-2">
+              <TraversalMechanism 
+                type={activeType} 
+                stack={displayData.stack} 
+                queue={displayData.queue} 
+                activeNode={displayData.activeNode} 
+              />
+            </div>
           </div>
 
-          {/* Step badges */}
-          <div className="w-full mt-4 flex flex-wrap gap-2 justify-center font-mono text-sm mb-4">
-            {sequence.map((nodeId, idx) => {
-              const isActive = currentStep === idx;
-              const isVisited = currentStep > idx || (currentStep === sequence.length && idx < sequence.length);
-
-              return (
+          {/* Sequence Display */}
+          <div className="w-full mt-6 flex flex-col gap-2">
+            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Visitation Sequence</h4>
+            <div className="flex flex-wrap gap-2 justify-center font-mono text-sm">
+                {displayData.visitedNodes.map((nodeId, idx) => (
                 <div
-                  key={idx}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center font-bold transition-all duration-300
-                    ${isActive ? 'bg-indigo-600 text-white scale-110 shadow-lg'
-                      : isVisited ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300'
-                      : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500'}`}
+                    key={idx}
+                    className="w-9 h-9 rounded-full flex items-center justify-center font-bold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 animate-in zoom-in duration-300"
                 >
-                  {nodeId}
+                    {nodeId}
                 </div>
-              );
-            })}
+                ))}
+                {displayData.visitedNodes.length === 0 && (
+                    <div className="text-slate-400 italic text-xs py-2">Waiting for first visit...</div>
+                )}
+            </div>
           </div>
 
           {/* Description */}
-          <div className="w-full mb-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3 min-h-[52px] text-sm text-slate-700 dark:text-slate-300 font-mono">
+          <div className="w-full mt-6 mb-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3 min-h-[52px] text-sm text-slate-700 dark:text-slate-300 font-mono">
             {displayData.description}
           </div>
 
-          <div className="w-full">
+          <div className="w-full border-t border-slate-100 dark:border-slate-800 pt-4">
               <VisualizerControls 
                   isPlaying={isPlaying}
                   isComplete={isComplete}
@@ -192,7 +324,7 @@ const TraversalAnimator = () => {
         </Card>
 
         {/* Info card */}
-        <div className="space-y-4">
+        <div className="space-y-4 flex flex-col">
           <div className="bg-indigo-900 text-white rounded-xl p-6 shadow-md">
             <h3 className="text-2xl font-bold mb-1">{desc.name}</h3>
             <p className="text-indigo-200 font-mono bg-indigo-950/50 px-3 py-1 rounded inline-block mb-4 text-sm">{desc.order}</p>
@@ -216,7 +348,7 @@ const TraversalAnimator = () => {
             </div>
           </div>
 
-          <Card>
+          <Card className="flex-grow">
             <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-3 text-xs uppercase tracking-wider">Algorithm Skeleton</h4>
             <pre className="bg-slate-900 text-green-400 p-4 rounded-lg overflow-x-auto font-mono text-xs leading-relaxed">
               {desc.code}
