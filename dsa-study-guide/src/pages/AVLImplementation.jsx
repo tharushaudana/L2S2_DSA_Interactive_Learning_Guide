@@ -6,7 +6,7 @@ import { TabBar } from '../components/ui/TabBar';
 import { InfoBox } from '../components/ui/InfoBox';
 import { CodeBlock } from '../components/ui/CodeBlock';
 import { TreeGraph } from '../components/visualizations/TreeGraph';
-import { useAVL, avlToGraph } from '../hooks/useAVL';
+import { useAVL } from '../hooks/useAVL';
 import { CODE } from '../data/codeSnippets';
 
 const TABS = [
@@ -28,7 +28,6 @@ const AVLVisualizer = () => {
 
   const { nodes, edges } = avl.graph;
 
-  // Build balance factor map from nodes
   const bfMap = {};
   nodes.forEach(n => { bfMap[n.id] = n.balance; });
 
@@ -42,13 +41,11 @@ const AVLVisualizer = () => {
 
   const loadPreset = (preset) => {
     avl.reset();
-    // Insert with delay to show steps
     preset.values.forEach((v, i) => {
       setTimeout(() => avl.insert(v), i * 100);
     });
   };
 
-  // Get nodes with key for display
   const displayNodes = nodes.map(n => ({ id: n.id, x: n.x, y: n.y, key: n.key }));
 
   return (
@@ -59,13 +56,13 @@ const AVLVisualizer = () => {
           <button
             key={preset.label}
             onClick={() => loadPreset(preset)}
-            className="px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-sm font-medium transition-colors"
+            className="px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900/30 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm font-medium transition-colors"
             title={preset.desc}
           >
             {preset.label}
           </button>
         ))}
-        <button onClick={avl.reset} className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium flex items-center gap-1">
+        <button onClick={avl.reset} className="px-3 py-1.5 bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/40 text-red-700 dark:text-red-300 rounded-lg text-sm font-medium flex items-center gap-1">
           <RefreshCw size={14} /> Reset
         </button>
       </div>
@@ -78,7 +75,7 @@ const AVLVisualizer = () => {
           onChange={e => setInputValue(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && doInsert()}
           placeholder="Insert value..."
-          className="border border-slate-300 rounded-lg px-3 py-2 text-sm flex-grow focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm flex-grow focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
         <button onClick={doInsert} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium">
           <Plus size={16} /> Insert
@@ -86,9 +83,9 @@ const AVLVisualizer = () => {
       </div>
 
       {/* Tree visualization */}
-      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 min-h-[280px] flex items-center justify-center">
+      <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-4 min-h-[280px] flex items-center justify-center">
         {displayNodes.length === 0 ? (
-          <p className="text-slate-400 text-sm">Insert values or select a preset to see the AVL tree.</p>
+          <p className="text-slate-400 dark:text-slate-500 text-sm">Insert values or select a preset to see the AVL tree.</p>
         ) : (
           <TreeGraph
             nodes={displayNodes}
@@ -102,24 +99,24 @@ const AVLVisualizer = () => {
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3 text-xs">
-        <div className="flex items-center gap-1.5"><span className="w-4 h-4 rounded-full bg-indigo-500 inline-block"/><span className="text-slate-600">+n = left-heavy (BF)</span></div>
-        <div className="flex items-center gap-1.5"><span className="w-4 h-4 rounded-full bg-indigo-300 inline-block"/><span className="text-slate-600">-n = right-heavy (BF)</span></div>
-        <div className="flex items-center gap-1.5"><span className="w-4 h-4 rounded-full bg-red-300 border border-red-400 inline-block"/><span className="text-slate-600">Red = unbalanced (|BF|&gt;1)</span></div>
+        <div className="flex items-center gap-1.5"><span className="w-4 h-4 rounded-full bg-indigo-500 inline-block"/><span className="text-slate-600 dark:text-slate-400">+n = left-heavy (BF)</span></div>
+        <div className="flex items-center gap-1.5"><span className="w-4 h-4 rounded-full bg-indigo-300 inline-block"/><span className="text-slate-600 dark:text-slate-400">-n = right-heavy (BF)</span></div>
+        <div className="flex items-center gap-1.5"><span className="w-4 h-4 rounded-full bg-red-300 border border-red-400 inline-block"/><span className="text-slate-600 dark:text-slate-400">Red = unbalanced (|BF|&gt;1)</span></div>
       </div>
 
       {/* Log of operations */}
       {avl.log.length > 0 && (
         <Card>
-          <h4 className="font-bold text-slate-700 mb-3 text-sm">Operation Log</h4>
+          <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-3 text-sm">Operation Log</h4>
           <div className="space-y-1 max-h-40 overflow-y-auto">
             {avl.log.slice(-10).map((entry, i) => (
               <div key={i} className={`text-xs font-mono px-2 py-1 rounded ${
-                entry.type === 'rotate' ? 'bg-orange-100 text-orange-800 font-bold' :
-                entry.type === 'insert' ? 'bg-green-50 text-green-800' :
-                entry.type === 'duplicate' ? 'bg-yellow-50 text-yellow-800' :
-                'bg-slate-50 text-slate-700'
+                entry.type === 'rotate' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 font-bold' :
+                entry.type === 'insert' ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300' :
+                entry.type === 'duplicate' ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300' :
+                'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
               }`}>
-                {entry.rotationType && <span className="bg-orange-200 px-1 rounded mr-1">{entry.rotationType}</span>}
+                {entry.rotationType && <span className="bg-orange-200 dark:bg-orange-800 px-1 rounded mr-1">{entry.rotationType}</span>}
                 {entry.description}
               </div>
             ))}
@@ -139,20 +136,20 @@ const AVLVisualizer = () => {
 const InsertionSteps = () => (
   <div className="space-y-4">
     <Card>
-      <h3 className="text-xl font-bold text-slate-800 mb-4">5-Step AVL Insertion Algorithm</h3>
+      <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">5-Step AVL Insertion Algorithm</h3>
       <div className="space-y-4">
         {[
-          { step: 1, title: 'BST Insert', desc: 'Insert the new key using the standard BST insertion algorithm — traverse left or right based on comparison, insert at the empty leaf position.', color: 'bg-blue-100 text-blue-700' },
-          { step: 2, title: 'Update Heights', desc: 'Walk back up the path from the inserted node to the root. At each ancestor, update the height: height = 1 + max(height(left), height(right)).', color: 'bg-indigo-100 text-indigo-700' },
-          { step: 3, title: 'Check Balance Factor', desc: 'At each ancestor, compute BF = height(left) - height(right). If |BF| ≤ 1, the node is balanced. Continue up.', color: 'bg-purple-100 text-purple-700' },
-          { step: 4, title: 'Identify Rotation Case', desc: 'If |BF| > 1, identify which rotation case applies: LL, RR, LR, or RL based on BF and the direction of the new key vs. the child.', color: 'bg-orange-100 text-orange-700' },
-          { step: 5, title: 'Perform Rotation', desc: 'Execute the appropriate rotation(s) to restore balance. After rotation, the subtree root changes, so return the new root to the parent.', color: 'bg-red-100 text-red-700' },
+          { step: 1, title: 'BST Insert', desc: 'Insert the new key using the standard BST insertion algorithm — traverse left or right based on comparison, insert at the empty leaf position.', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' },
+          { step: 2, title: 'Update Heights', desc: 'Walk back up the path from the inserted node to the root. At each ancestor, update the height: height = 1 + max(height(left), height(right)).', color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300' },
+          { step: 3, title: 'Check Balance Factor', desc: 'At each ancestor, compute BF = height(left) - height(right). If |BF| ≤ 1, the node is balanced. Continue up.', color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' },
+          { step: 4, title: 'Identify Rotation Case', desc: 'If |BF| > 1, identify which rotation case applies: LL, RR, LR, or RL based on BF and the direction of the new key vs. the child.', color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' },
+          { step: 5, title: 'Perform Rotation', desc: 'Execute the appropriate rotation(s) to restore balance. After rotation, the subtree root changes, so return the new root to the parent.', color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' },
         ].map(item => (
           <div key={item.step} className="flex gap-4 items-start">
             <div className={`w-10 h-10 rounded-xl ${item.color} font-bold text-xl flex items-center justify-center shrink-0`}>{item.step}</div>
             <div>
-              <h4 className="font-semibold text-slate-800 mb-1">{item.title}</h4>
-              <p className="text-sm text-slate-600">{item.desc}</p>
+              <h4 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{item.title}</h4>
+              <p className="text-sm text-slate-600 dark:text-slate-400">{item.desc}</p>
             </div>
           </div>
         ))}
@@ -162,10 +159,10 @@ const InsertionSteps = () => (
     <InfoBox variant="exam">
       <div className="space-y-1">
         <p><strong>Rotation conditions (for insert key k):</strong></p>
-        <p>• LL: BF &gt; 1 && k &lt; node.left.key → rightRotate(node)</p>
-        <p>• RR: BF &lt; -1 && k &gt; node.right.key → leftRotate(node)</p>
-        <p>• LR: BF &gt; 1 && k &gt; node.left.key → leftRotate(left), rightRotate(node)</p>
-        <p>• RL: BF &lt; -1 && k &lt; node.right.key → rightRotate(right), leftRotate(node)</p>
+        <p>• LL: BF &gt; 1 &amp;&amp; k &lt; node.left.key → rightRotate(node)</p>
+        <p>• RR: BF &lt; -1 &amp;&amp; k &gt; node.right.key → leftRotate(node)</p>
+        <p>• LR: BF &gt; 1 &amp;&amp; k &gt; node.left.key → leftRotate(left), rightRotate(node)</p>
+        <p>• RL: BF &lt; -1 &amp;&amp; k &lt; node.right.key → rightRotate(right), leftRotate(node)</p>
       </div>
     </InfoBox>
   </div>

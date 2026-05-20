@@ -42,8 +42,8 @@ export default function ExamPrep() {
       {/* Topic filter */}
       <Card className="p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Filter size={16} className="text-slate-500" />
-          <span className="text-sm font-semibold text-slate-700">Filter by Topic:</span>
+          <Filter size={16} className="text-slate-500 dark:text-slate-400" />
+          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Filter by Topic:</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {TOPICS.map(t => (
@@ -53,14 +53,14 @@ export default function ExamPrep() {
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 activeTopic === t
                   ? 'bg-indigo-600 text-white'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300'
               }`}
             >
               {TOPIC_LABELS[t]}
             </button>
           ))}
         </div>
-        <p className="text-xs text-slate-500 mt-2">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
           Showing {filteredQuestions.length} of {EXAM_QUESTIONS.length} flashcards
         </p>
       </Card>
