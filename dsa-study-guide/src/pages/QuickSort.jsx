@@ -29,7 +29,7 @@ const Theory = () => (
         </li>
         <li className="flex gap-3 items-start">
           <span className="bg-purple-100 text-purple-700 font-bold rounded-full w-7 h-7 flex items-center justify-center text-xs shrink-0">2</span>
-          <div><strong>Partition</strong> — rearrange so elements ≤ pivot go left, elements > pivot go right. The pivot lands in its final sorted position.</div>
+          <div><strong>Partition</strong> — rearrange so elements ≤ pivot go left, elements &gt; pivot go right. The pivot lands in its final sorted position.</div>
         </li>
         <li className="flex gap-3 items-start">
           <span className="bg-purple-100 text-purple-700 font-bold rounded-full w-7 h-7 flex items-center justify-center text-xs shrink-0">3</span>

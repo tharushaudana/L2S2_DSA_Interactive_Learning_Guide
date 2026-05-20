@@ -104,7 +104,7 @@ const AVLVisualizer = () => {
       <div className="flex flex-wrap gap-3 text-xs">
         <div className="flex items-center gap-1.5"><span className="w-4 h-4 rounded-full bg-indigo-500 inline-block"/><span className="text-slate-600">+n = left-heavy (BF)</span></div>
         <div className="flex items-center gap-1.5"><span className="w-4 h-4 rounded-full bg-indigo-300 inline-block"/><span className="text-slate-600">-n = right-heavy (BF)</span></div>
-        <div className="flex items-center gap-1.5"><span className="w-4 h-4 rounded-full bg-red-300 border border-red-400 inline-block"/><span className="text-slate-600">Red = unbalanced (|BF|>1)</span></div>
+        <div className="flex items-center gap-1.5"><span className="w-4 h-4 rounded-full bg-red-300 border border-red-400 inline-block"/><span className="text-slate-600">Red = unbalanced (|BF|&gt;1)</span></div>
       </div>
 
       {/* Log of operations */}
