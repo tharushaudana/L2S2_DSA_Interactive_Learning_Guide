@@ -1,30 +1,35 @@
 import { useState, useMemo, useEffect } from 'react';
 import { ArrayVisualizer } from './ArrayVisualizer';
+import { TreeLevelRow } from './TreeLevelRow';
 import { VisualizerControls } from './VisualizerControls';
 import { useAnimationStepper } from '../../hooks/useAnimationStepper';
+import { generateMergeSortSteps } from '../../data/sortingAlgorithms';
 
-export const SortingVisualizer = ({ generateSteps, title, algorithmId }) => {
+export const MergeSortVisualizer = () => {
   const [inputStr, setInputStr] = useState('8, 3, 6, 1, 9, 4, 7, 2');
-  const [pivotStrategy, setPivotStrategy] = useState('last');
   const [inputError, setInputError] = useState('');
 
   const parsedArray = useMemo(() => {
     const arr = inputStr.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
-    return arr.length >= 2 ? arr : [8, 3, 6, 1, 9, 4];
+    return arr.length >= 2 ? arr : [8, 3, 6, 1, 9, 4, 7, 2];
   }, [inputStr]);
 
   const steps = useMemo(() => {
-    try { return generateSteps(parsedArray, pivotStrategy); }
+    try { return generateMergeSortSteps(parsedArray); }
     catch { return []; }
-  }, [generateSteps, parsedArray, pivotStrategy]);
+  }, [parsedArray]);
 
-  const { currentStep, currentStepData, isPlaying, isComplete, speed, totalSteps, play, pause, reset, stepForward, stepBack, setSpeed } = useAnimationStepper(steps);
+  const { 
+    currentStep, currentStepData, isPlaying, isComplete, speed, totalSteps, 
+    play, pause, reset, stepForward, stepBack, setSpeed 
+  } = useAnimationStepper(steps);
 
-  useEffect(() => { reset(); }, [generateSteps]);
+  useEffect(() => { reset(); }, [parsedArray]);
 
   const displayData = currentStepData || {
     array: parsedArray, highlights: {}, pointers: [],
-    description: 'Press Play to start, or use step controls.',
+    description: 'Press Play to start the Merge Sort visualization.',
+    treeLevels: []
   };
 
   const handleInput = (e) => {
@@ -44,9 +49,11 @@ export const SortingVisualizer = ({ generateSteps, title, algorithmId }) => {
     reset();
   };
 
+  const maxVal = useMemo(() => Math.max(...parsedArray, 1), [parsedArray]);
+
   return (
-    <div className="space-y-4">
-      {/* Input */}
+    <div className="space-y-6">
+      {/* Input Section */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="flex flex-col gap-1 flex-grow">
           <div className="flex gap-2 items-center">
@@ -62,20 +69,43 @@ export const SortingVisualizer = ({ generateSteps, title, algorithmId }) => {
           </div>
           {inputError && <p className="text-red-500 text-xs">{inputError}</p>}
         </div>
-        {algorithmId === 'quick' && (
-          <select value={pivotStrategy} onChange={e => { setPivotStrategy(e.target.value); reset(); }}
-            className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
-            <option value="last">Pivot: Last element</option>
-            <option value="first">Pivot: First element</option>
-            <option value="middle">Pivot: Middle element</option>
-            <option value="median">Pivot: Median of three</option>
-          </select>
-        )}
       </div>
 
-      {/* Visualization */}
-      <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-4 min-h-[200px] flex flex-col justify-end">
-        <ArrayVisualizer array={displayData.array} highlights={displayData.highlights} pointers={displayData.pointers} />
+      {/* Main Visualization Area */}
+      <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6 min-h-[500px] flex flex-col gap-6">
+        {/* Main Array */}
+        <div className="flex flex-col gap-2">
+          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">In-Place State</h4>
+          <ArrayVisualizer array={displayData.array} highlights={displayData.highlights} pointers={displayData.pointers} />
+        </div>
+
+        {/* Tree History Area */}
+        <div className="flex-grow flex flex-col gap-4 border-t border-slate-100 dark:border-slate-700/50 pt-6">
+          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Recursion Tree History</h4>
+          {displayData.treeLevels && displayData.treeLevels.length > 0 ? (
+            <div className="space-y-4">
+              {displayData.treeLevels.map((levelNodes, depth) => (
+                <div key={depth} className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[8px] font-bold text-slate-300 dark:text-slate-600 uppercase">L{depth}</span>
+                    <div className="h-[1px] flex-grow bg-slate-50 dark:bg-slate-800/50"></div>
+                  </div>
+                  <TreeLevelRow 
+                    levelNodes={levelNodes} 
+                    totalLength={parsedArray.length} 
+                    maxVal={maxVal}
+                    activePointers={displayData.activePointers}
+                    depth={depth}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex-grow flex items-center justify-center text-slate-400 dark:text-slate-500 text-sm italic">
+              Divide and conquer steps will be visualized here...
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Description */}
@@ -99,4 +129,3 @@ export const SortingVisualizer = ({ generateSteps, title, algorithmId }) => {
     </div>
   );
 };
-

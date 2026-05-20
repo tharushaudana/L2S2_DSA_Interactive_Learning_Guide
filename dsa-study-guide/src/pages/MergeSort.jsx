@@ -6,8 +6,7 @@ import { TabBar } from '../components/ui/TabBar';
 import { InfoBox } from '../components/ui/InfoBox';
 import { CodeBlock } from '../components/ui/CodeBlock';
 import { ComplexityTable } from '../components/ui/ComplexityTable';
-import { SortingVisualizer } from '../components/visualizations/SortingVisualizer';
-import { generateMergeSortSteps } from '../data/sortingAlgorithms';
+import { MergeSortVisualizer } from '../components/visualizations/MergeSortVisualizer';
 import { CODE } from '../data/codeSnippets';
 
 const TABS = [
@@ -110,9 +109,9 @@ export default function MergeSort() {
       <Card>
         <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">Merge Sort Visualizer</h3>
         <InfoBox variant="info" className="mb-4">
-          Watch as the array splits (yellow) and merges (green). The description shows each comparison and placement step.
+          Watch as the array <strong>divides</strong> into sub-arrays and then <strong>merges</strong> back together. The working area below shows the recursive steps in detail.
         </InfoBox>
-        <SortingVisualizer generateSteps={generateMergeSortSteps} title="Merge Sort" algorithmId="merge" />
+        <MergeSortVisualizer />
       </Card>
     ),
     code: (

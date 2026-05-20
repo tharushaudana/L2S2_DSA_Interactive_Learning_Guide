@@ -6,8 +6,7 @@ import { TabBar } from '../components/ui/TabBar';
 import { InfoBox } from '../components/ui/InfoBox';
 import { CodeBlock } from '../components/ui/CodeBlock';
 import { ComplexityTable } from '../components/ui/ComplexityTable';
-import { SortingVisualizer } from '../components/visualizations/SortingVisualizer';
-import { generateQuickSortSteps } from '../data/sortingAlgorithms';
+import { QuickSortVisualizer } from '../components/visualizations/QuickSortVisualizer';
 import { CODE } from '../data/codeSnippets';
 
 const TABS = [
@@ -163,9 +162,9 @@ export default function QuickSort() {
       <Card>
         <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4">Quick Sort Visualizer</h3>
         <InfoBox variant="info" className="mb-4">
-          <strong>Purple</strong> = pivot element. Try changing the pivot strategy in the dropdown to see how it affects partitioning!
+          Watch as the array is partitioned around the <strong>purple pivot</strong>. Elements are visually isolated to show the current sub-array being sorted.
         </InfoBox>
-        <SortingVisualizer generateSteps={generateQuickSortSteps} title="Quick Sort" algorithmId="quick" />
+        <QuickSortVisualizer />
       </Card>
     ),
     pivot: <PivotStrategies />,

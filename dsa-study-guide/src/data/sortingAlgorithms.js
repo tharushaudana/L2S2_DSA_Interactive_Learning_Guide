@@ -199,16 +199,33 @@ export function generateInsertionSortSteps(inputArray) {
 export function generateMergeSortSteps(inputArray) {
   const steps = [];
   const arr = [...inputArray];
+  const treeLevels = [];
 
-  function mergeSort(subArr, offset) {
+  const updateTree = (depth, start, end, values, status) => {
+    if (!treeLevels[depth]) treeLevels[depth] = [];
+    let node = treeLevels[depth].find(n => n.start === start && n.end === end);
+    if (!node) {
+      node = { start, end, values: [...values], status };
+      treeLevels[depth].push(node);
+    } else {
+      node.values = [...values];
+      node.status = status;
+    }
+  };
+
+  const snapshot = () => JSON.parse(JSON.stringify(treeLevels));
+
+  function mergeSort(subArr, offset, depth = 0) {
+    updateTree(depth, offset, offset + subArr.length - 1, subArr, 'active');
+
     if (subArr.length <= 1) {
+      updateTree(depth, offset, offset, subArr, 'sorted');
       steps.push({
         array: [...arr],
         highlights: { [offset]: 'sorted' },
-        description: `Base case: subarray [${subArr}] at index ${offset} has 1 element — already sorted.`,
+        description: `Base case: [${subArr}] at index ${offset} is sorted.`,
         pointers: [],
-        phase: 'divide',
-        subArrays: [{ start: offset, end: offset, values: [...subArr] }],
+        treeLevels: snapshot(),
       });
       return subArr;
     }
@@ -217,37 +234,33 @@ export function generateMergeSortSteps(inputArray) {
     const left = subArr.slice(0, mid);
     const right = subArr.slice(mid);
 
+    updateTree(depth, offset, offset + subArr.length - 1, subArr, 'divided');
+
     steps.push({
       array: [...arr],
-      highlights: {
-        ...Object.fromEntries(subArr.map((_, i) => [offset + i, 'comparing'])),
-      },
-      description: `Dividing [${subArr.join(', ')}] into [${left.join(', ')}] and [${right.join(', ')}].`,
+      highlights: Object.fromEntries(subArr.map((_, i) => [offset + i, 'comparing'])),
+      description: `Dividing [${subArr.join(', ')}] into two halves.`,
       pointers: [],
-      phase: 'divide',
-      subArrays: [
-        { start: offset, end: offset + mid - 1, values: [...left], label: 'left' },
-        { start: offset + mid, end: offset + subArr.length - 1, values: [...right], label: 'right' },
-      ],
+      treeLevels: snapshot(),
     });
 
-    const sortedLeft = mergeSort(left, offset);
-    const sortedRight = mergeSort(right, offset + mid);
+    const sortedLeft = mergeSort(left, offset, depth + 1);
+    const sortedRight = mergeSort(right, offset + mid, depth + 1);
 
     // Merge
     const merged = [];
     let li = 0, ri = 0;
 
+    updateTree(depth, offset, offset + subArr.length - 1, [...sortedLeft, ...sortedRight], 'merging');
+
     while (li < sortedLeft.length && ri < sortedRight.length) {
       steps.push({
         array: [...arr],
-        highlights: {
-          [offset + li]: 'min',
-          [offset + mid + ri]: 'comparing',
-        },
-        description: `Merging: Comparing ${sortedLeft[li]} (left[${li}]) vs ${sortedRight[ri]} (right[${ri}]).`,
+        highlights: { [offset + li]: 'min', [offset + mid + ri]: 'comparing' },
+        description: `Comparing ${sortedLeft[li]} and ${sortedRight[ri]}.`,
         pointers: [{ name: 'L', index: offset + li }, { name: 'R', index: offset + mid + ri }],
-        phase: 'merge',
+        treeLevels: snapshot(),
+        activePointers: { depth: depth + 1, leftIdx: li, rightIdx: ri, leftStart: offset, rightStart: offset + mid }
       });
 
       if (sortedLeft[li] <= sortedRight[ri]) {
@@ -272,25 +285,27 @@ export function generateMergeSortSteps(inputArray) {
       ri++;
     }
 
+    updateTree(depth, offset, offset + subArr.length - 1, merged, 'sorted');
+
     steps.push({
       array: [...arr],
       highlights: Object.fromEntries(merged.map((_, i) => [offset + i, 'sorted'])),
-      description: `Merged into [${merged.join(', ')}] at positions [${offset}..${offset + merged.length - 1}].`,
+      description: `Merged sorted sub-array: [${merged.join(', ')}].`,
       pointers: [],
-      phase: 'merge',
+      treeLevels: snapshot(),
     });
 
     return merged;
   }
 
-  mergeSort(arr, 0);
+  mergeSort(arr, 0, 0);
 
   steps.push({
     array: [...arr],
     highlights: Object.fromEntries([...Array(arr.length)].map((_, i) => [i, 'sorted'])),
-    description: 'Merge Sort complete! Array is fully sorted.',
+    description: 'Merge Sort complete!',
     pointers: [],
-    phase: 'done',
+    treeLevels: snapshot(),
   });
 
   return steps;
@@ -299,6 +314,22 @@ export function generateMergeSortSteps(inputArray) {
 export function generateQuickSortSteps(inputArray, pivotStrategy = 'last') {
   const steps = [];
   const arr = [...inputArray];
+  const treeLevels = [];
+
+  const updateTree = (depth, start, end, values, status, pivotIdx = -1) => {
+    if (!treeLevels[depth]) treeLevels[depth] = [];
+    let node = treeLevels[depth].find(n => n.start === start && n.end === end);
+    if (!node) {
+      node = { start, end, values: [...values], status, pivotIdx };
+      treeLevels[depth].push(node);
+    } else {
+      node.values = [...values];
+      node.status = status;
+      node.pivotIdx = pivotIdx;
+    }
+  };
+
+  const snapshot = () => JSON.parse(JSON.stringify(treeLevels));
 
   function getPivotIndex(low, high) {
     if (pivotStrategy === 'first') return low;
@@ -309,87 +340,87 @@ export function generateQuickSortSteps(inputArray, pivotStrategy = 'last') {
       vals.sort((a, b) => a[0] - b[0]);
       return vals[1][1];
     }
-    return high; // last (default)
+    return high;
   }
 
-  function partition(low, high) {
+  function partition(low, high, depth) {
     const pivotIdx = getPivotIndex(low, high);
-    // Move pivot to end
     [arr[pivotIdx], arr[high]] = [arr[high], arr[pivotIdx]];
     const pivot = arr[high];
+
+    updateTree(depth, low, high, arr.slice(low, high + 1), 'partitioning', high);
 
     steps.push({
       array: [...arr],
       highlights: { [high]: 'pivot' },
-      description: `Pivot selected: ${pivot} (moved to position ${high}).`,
+      description: `Pivot selected: ${pivot}.`,
       pointers: [{ name: 'pivot', index: high }],
       range: { low, high },
+      treeLevels: snapshot(),
     });
 
     let i = low - 1;
-
     for (let j = low; j < high; j++) {
       steps.push({
         array: [...arr],
         highlights: { [high]: 'pivot', [j]: 'comparing', ...(i >= low ? { [i]: 'min' } : {}) },
-        description: `Comparing arr[${j}]=${arr[j]} with pivot=${pivot}. ${arr[j] <= pivot ? `${arr[j]} ≤ pivot, swap to left partition.` : `${arr[j]} > pivot, stays right.`}`,
-        pointers: [{ name: 'pivot', index: high }, { name: 'j', index: j }, ...(i >= low ? [{ name: 'i', index: i }] : [])],
+        description: `Comparing ${arr[j]} with pivot ${pivot}.`,
+        pointers: [{ name: 'pivot', index: high }, { name: 'j', index: j }],
         range: { low, high },
+        treeLevels: snapshot(),
       });
 
       if (arr[j] <= pivot) {
         i++;
-        if (i !== j) {
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-          steps.push({
-            array: [...arr],
-            highlights: { [high]: 'pivot', [i]: 'swapping', [j]: 'swapping' },
-            description: `Swap arr[${i}]=${arr[i]} and arr[${j}]=${arr[j]}.`,
-            pointers: [{ name: 'pivot', index: high }, { name: 'i', index: i }, { name: 'j', index: j }],
-            range: { low, high },
-          });
-        }
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        updateTree(depth, low, high, arr.slice(low, high + 1), 'partitioning', high);
       }
     }
 
-    // Place pivot in correct position
     [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+    updateTree(depth, low, high, arr.slice(low, high + 1), 'partitioned', i + 1);
 
     steps.push({
       array: [...arr],
       highlights: { [i + 1]: 'sorted' },
-      description: `Pivot ${pivot} placed in final position ${i + 1}. Elements left: ≤ pivot. Elements right: > pivot.`,
+      description: `Pivot placed at index ${i + 1}.`,
       pointers: [{ name: 'pivot', index: i + 1 }],
       range: { low, high },
+      treeLevels: snapshot(),
     });
 
     return i + 1;
   }
 
-  function quickSort(low, high) {
-    if (low < high) {
-      const pivotPos = partition(low, high);
-      quickSort(low, pivotPos - 1);
-      quickSort(pivotPos + 1, high);
-    } else if (low === high) {
-      steps.push({
-        array: [...arr],
-        highlights: { [low]: 'sorted' },
-        description: `Single element arr[${low}]=${arr[low]} is in its correct sorted position.`,
-        pointers: [],
-        range: { low, high },
-      });
+  function quickSort(low, high, depth = 0) {
+    if (low <= high) {
+      updateTree(depth, low, high, arr.slice(low, high + 1), 'active');
+      if (low < high) {
+        const pivotPos = partition(low, high, depth);
+        quickSort(low, pivotPos - 1, depth + 1);
+        quickSort(pivotPos + 1, high, depth + 1);
+      } else {
+        updateTree(depth, low, high, arr.slice(low, high + 1), 'sorted');
+        steps.push({
+          array: [...arr],
+          highlights: { [low]: 'sorted' },
+          description: `Single element is sorted.`,
+          pointers: [],
+          range: { low, high },
+          treeLevels: snapshot(),
+        });
+      }
     }
   }
 
-  quickSort(0, arr.length - 1);
+  quickSort(0, arr.length - 1, 0);
 
   steps.push({
     array: [...arr],
     highlights: Object.fromEntries([...Array(arr.length)].map((_, i) => [i, 'sorted'])),
-    description: 'Quick Sort complete! Array is fully sorted.',
+    description: 'Quick Sort complete!',
     pointers: [],
-    range: { low: 0, high: arr.length - 1 },
+    treeLevels: snapshot(),
   });
 
   return steps;
